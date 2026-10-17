@@ -1,8 +1,24 @@
+"""
+CPU SIMULADA — Código-base
+AOC 2026.2
+
+CPU de 8 bits:
+- 4 registradores: R0, R1, R2, R3
+- memória com 16 posições
+- PC (Program Counter)
+- ULA
+- instruções LOAD, STORE, ADD, SUB, AND, OR, XOR, JMP e HALT
+
+No código-base, LOAD, JMP e HALT já estão implementados.
+As demais instruções possuem partes para implementação.
+"""
+
+from ula import ula, limitar_8bits
+
 
 class CPU:
 
     def __init__(self):
-        # Quatro registradores de 8 bits
         self.registradores = {
             "R0": 0,
             "R1": 0,
@@ -10,128 +26,208 @@ class CPU:
             "R3": 0
         }
 
-        # Memoria com 16 posicoes
+        # 16 posições de memória
         self.memoria = [0] * 16
 
-        # Contador de programa
+        # Program Counter
         self.pc = 0
 
-        # Indica se a CPU parou
+        # Estado da CPU
         self.halted = False
 
-    # Limita um numero a 8 bits
-    def limitar_8bits(self, valor):
-        return valor & 0xFF
-
-    # Unidade Logica e Aritmetica
-    def ula(self, operacao, a, b):
-
-        if operacao == "ADD":
-            resultado = a + b
-
-        elif operacao == "SUB":
-            resultado = a - b
-
-        elif operacao == "AND":
-            resultado = a & b
-
-        elif operacao == "OR":
-            resultado = a | b
-
-        elif operacao == "XOR":
-            resultado = a ^ b
-
-        else:
-            raise ValueError("Operacao da ULA invalida")
-
-        return self.limitar_8bits(resultado)
-
-    # Executa uma instrucao
     def executar_instrucao(self, instrucao):
 
+        # Exemplo:
+        # "LOAD R0, 5"
+        # "ADD R0, R1"
+        # "JMP 4"
+
         partes = instrucao.replace(",", "").split()
+
         operacao = partes[0]
 
-        # LOAD: coloca um valor no registrador
+        # ==============================================
+        # LOAD — IMPLEMENTADO
+        # ==============================================
+        # LOAD R0, 5
+        # R0 <- 5
+
         if operacao == "LOAD":
+
             registrador = partes[1]
             valor = int(partes[2])
 
-            self.registradores[registrador] = (
-                self.limitar_8bits(valor)
-            )
+            self.registradores[registrador] = limitar_8bits(valor)
 
             self.pc += 1
 
-        # STORE: grava um valor na memoria
+        # ==============================================
+        # STORE — IMPLEMENTAR
+        # ==============================================
+        # STORE R0, 15
+        # MEM[15] <- R0
+
         elif operacao == "STORE":
             registrador = partes[1]
             endereco = int(partes[2])
 
-            self.memoria[endereco] = (
-                self.registradores[registrador]
-            )
+            self.memoria[endereco] = self.registradores[registrador]
 
             self.pc += 1
 
-        # Operacoes da ULA
-        elif operacao in ("ADD", "SUB", "AND", "OR", "XOR"):
+        # ==============================================
+        # ADD — IMPLEMENTAR
+        # ==============================================
+        # ADD R0, R1
+        # R0 <- R0 + R1
 
-            destino = partes[1]
-            origem = partes[2]
+        elif operacao == "ADD":
+            r0 = partes[1]
+            r1 = partes[2]
 
-            a = self.registradores[destino]
-            b = self.registradores[origem]
-
-            resultado = self.ula(operacao, a, b)
-
-            self.registradores[destino] = resultado
-
+            a = self.registradores[r0]
+            b = self.registradores[r1]
+            
+            self.registradores[r0] = ula(operacao, a, b)
+            
             self.pc += 1
 
-        # JMP: desvia para outra instrucao
+        # ==============================================
+        # SUB — IMPLEMENTAR
+        # ==============================================
+
+        elif operacao == "SUB":
+            r0 = partes[1]
+            r1 = partes[2]
+
+            a = self.registradores[r0]
+            b = self.registradores[r1]
+            
+            self.registradores[r0] = ula(operacao, a, b)
+            
+            self.pc += 1
+
+        # ==============================================
+        # AND — IMPLEMENTAR
+        # ==============================================
+
+        elif operacao == "AND":
+            r0 = partes[1]
+            r1 = partes[2]
+
+            a = self.registradores[r0]
+            b = self.registradores[r1]
+            
+            self.registradores[r0] = ula(operacao, a, b)
+            
+            self.pc += 1
+
+        # ==============================================
+        # OR — IMPLEMENTAR
+        # ==============================================
+
+        elif operacao == "OR":
+            r0 = partes[1]
+            r1 = partes[2]
+
+            a = self.registradores[r0]
+            b = self.registradores[r1]
+            
+            self.registradores[r0] = ula(operacao, a, b)
+            
+            self.pc += 1
+
+        # ==============================================
+        # XOR — IMPLEMENTAR
+        # ==============================================
+
+        elif operacao == "XOR":
+            r0 = partes[1]
+            r1 = partes[2]
+
+            a = self.registradores[r0]
+            b = self.registradores[r1]
+            
+            self.registradores[r0] = ula(operacao, a, b)
+            
+            self.pc += 1
+
+        # ==============================================
+        # JMP — IMPLEMENTADO
+        # ==============================================
+        # JMP 8
+        # PC <- 8
+
         elif operacao == "JMP":
+
             endereco = int(partes[1])
+
+            if endereco < 0 or endereco >= len(self.memoria):
+                raise ValueError("Endereço de salto inválido")
+
             self.pc = endereco
 
-        # HALT: encerra o programa
+        # ==============================================
+        # HALT — IMPLEMENTADO
+        # ==============================================
+
         elif operacao == "HALT":
+
             self.halted = True
 
         else:
-            raise ValueError(
-                f"Instrucao desconhecida: {operacao}"
-            )
 
-    # Ciclo: FETCH, DECODE e EXECUTE
+            raise ValueError(f"Instrução desconhecida: {operacao}")
+
     def ciclo(self):
 
-        # FETCH: busca a instrucao na memoria
+        if self.halted:
+            return
+
+        # ==============================================
+        # FETCH
+        # ==============================================
+
         instrucao = self.memoria[self.pc]
 
         print()
-        print("-----------------------------")
+        print("--------------------------------")
+        print("FETCH")
         print("PC:", self.pc)
-        print("Instrucao:", instrucao)
+        print("Instrução:", instrucao)
 
-        # DECODE e EXECUTE
+        # ==============================================
+        # DECODE + EXECUTE
+        # ==============================================
+
+        print("DECODE + EXECUTE")
+
         self.executar_instrucao(instrucao)
 
-        # Mostra os registradores
+        # ==============================================
+        # ESTADO
+        # ==============================================
+
         self.mostrar_estado()
 
-    # Executa o programa completo
-    def executar(self):
+    def executar(self, max_ciclos=100):
+
+        ciclos = 0
 
         while not self.halted:
-            self.ciclo()
 
-    # Mostra o estado dos registradores
+            if ciclos >= max_ciclos:
+                raise RuntimeError(
+                    "Número máximo de ciclos atingido. "
+                    "Verifique se existe um loop infinito."
+                )
+
+            self.ciclo()
+            ciclos += 1
+
     def mostrar_estado(self):
 
         print("Registradores:")
 
         for nome, valor in self.registradores.items():
-            print(
-                f"{nome} = {valor:02X} ({valor})"
-            )
+            print(f"  {nome} = {valor:02X} ({valor})")

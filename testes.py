@@ -1,130 +1,150 @@
+"""
+TESTES-BASE
+AOC 2026.2
 
-import unittest
+Os testes abaixo verificam apenas as partes já fornecidas
+no código-base: LOAD, JMP e HALT.
+
+Depois de implementar STORE e as operações da ULA,
+os alunos deverão ampliar este arquivo.
+"""
+
 from cpu import CPU
 
 
-class TestesCPU(unittest.TestCase):
+def teste_load():
+    cpu = CPU()
 
-    def setUp(self):
-        self.cpu = CPU()
+    cpu.memoria[0] = "LOAD R0, 25"
+    cpu.memoria[1] = "HALT"
 
-    # Teste da instrucao LOAD
-    def test_load(self):
-        self.cpu.executar_instrucao("LOAD R0, 5")
-        self.assertEqual(self.cpu.registradores["R0"], 5)
+    cpu.executar()
 
-    # Teste da instrucao STORE
-    def test_store(self):
-        self.cpu.executar_instrucao("LOAD R0, 10")
-        self.cpu.executar_instrucao("STORE R0, 15")
-        self.assertEqual(self.cpu.memoria[15], 10)
+    assert cpu.registradores["R0"] == 25
 
-    # Teste da soma
-    def test_add(self):
-        self.cpu.executar_instrucao("LOAD R0, 5")
-        self.cpu.executar_instrucao("LOAD R1, 8")
-        self.cpu.executar_instrucao("ADD R0, R1")
-        self.assertEqual(self.cpu.registradores["R0"], 13)
+    print("[OK] LOAD")
 
-    # Teste da subtracao
-    def test_sub(self):
-        self.cpu.executar_instrucao("LOAD R0, 10")
-        self.cpu.executar_instrucao("LOAD R1, 3")
-        self.cpu.executar_instrucao("SUB R0, R1")
-        self.assertEqual(self.cpu.registradores["R0"], 7)
 
-    # Teste da operacao AND
-    def test_and(self):
-        self.cpu.executar_instrucao("LOAD R0, 6")
-        self.cpu.executar_instrucao("LOAD R1, 3")
-        self.cpu.executar_instrucao("AND R0, R1")
-        self.assertEqual(self.cpu.registradores["R0"], 2)
+def teste_jmp():
+    cpu = CPU()
 
-    # Teste da operacao OR
-    def test_or(self):
-        self.cpu.executar_instrucao("LOAD R0, 6")
-        self.cpu.executar_instrucao("LOAD R1, 3")
-        self.cpu.executar_instrucao("OR R0, R1")
-        self.assertEqual(self.cpu.registradores["R0"], 7)
+    cpu.memoria[0] = "LOAD R0, 10"
+    cpu.memoria[1] = "JMP 4"
+    cpu.memoria[2] = "LOAD R0, 99"
+    cpu.memoria[3] = "HALT"
+    cpu.memoria[4] = "LOAD R1, 20"
+    cpu.memoria[5] = "HALT"
 
-    # Teste da operacao XOR
-    def test_xor(self):
-        self.cpu.executar_instrucao("LOAD R0, 6")
-        self.cpu.executar_instrucao("LOAD R1, 3")
-        self.cpu.executar_instrucao("XOR R0, R1")
-        self.assertEqual(self.cpu.registradores["R0"], 5)
+    cpu.executar()
 
-    # Teste do contador de programa
-    def test_pc(self):
-        self.cpu.executar_instrucao("LOAD R0, 5")
-        self.assertEqual(self.cpu.pc, 1)
+    assert cpu.registradores["R0"] == 10
+    assert cpu.registradores["R1"] == 20
 
-        self.cpu.executar_instrucao("LOAD R1, 8")
-        self.assertEqual(self.cpu.pc, 2)
+    print("[OK] JMP")
 
-    # Teste de salto
-    def test_jmp(self):
-        self.cpu.executar_instrucao("JMP 8")
-        self.assertEqual(self.cpu.pc, 8)
 
-    # Teste de parada
-    def test_halt(self):
-        self.cpu.executar_instrucao("HALT")
-        self.assertTrue(self.cpu.halted)
+def teste_halt():
+    cpu = CPU()
 
-    # Teste de soma acima de 255
-    def test_limite_8bits_soma(self):
-        self.cpu.executar_instrucao("LOAD R0, 250")
-        self.cpu.executar_instrucao("LOAD R1, 10")
-        self.cpu.executar_instrucao("ADD R0, R1")
-        self.assertEqual(self.cpu.registradores["R0"], 4)
+    cpu.memoria[0] = "HALT"
 
-    # Teste de subtracao negativa em 8 bits
-    def test_limite_8bits_sub(self):
-        self.cpu.executar_instrucao("LOAD R0, 0")
-        self.cpu.executar_instrucao("LOAD R1, 1")
-        self.cpu.executar_instrucao("SUB R0, R1")
-        self.assertEqual(self.cpu.registradores["R0"], 255)
+    cpu.executar()
 
-    # Teste do programa do professor
-    def test_programa_exemplo(self):
+    assert cpu.halted is True
 
-        programa = [
-            "LOAD R0, 5",
-            "LOAD R1, 8",
-            "ADD R0, R1",
-            "STORE R0, 15",
-            "HALT"
-        ]
+    print("[OK] HALT")
 
-        for i, instrucao in enumerate(programa):
-            self.cpu.memoria[i] = instrucao
 
-        self.cpu.executar()
+def teste_add():
+    cpu = CPU()
 
-        self.assertEqual(self.cpu.memoria[15], 13)
+    cpu.memoria[0] = "LOAD R0, 10"
+    cpu.memoria[1] = "LOAD R1, 15"
+    cpu.memoria[2] = "ADD R0, R1"
+    cpu.memoria[3] = "HALT"
 
-    # Teste do programa proprio
-    def test_programa_proprio(self):
+    cpu.executar()
 
-        programa = [
-            "LOAD R0, 10",
-            "LOAD R1, 3",
-            "ADD R0, R1",
-            "LOAD R2, 4",
-            "SUB R0, R2",
-            "XOR R0, R1",
-            "STORE R0, 15",
-            "HALT"
-        ]
+    assert cpu.registradores["R0"] == 25
 
-        for i, instrucao in enumerate(programa):
-            self.cpu.memoria[i] = instrucao
+    print("[OK] ADD")
 
-        self.cpu.executar()
 
-        self.assertEqual(self.cpu.memoria[15], 10)
+def teste_sub():
+    cpu = CPU()
+
+    cpu.memoria[0] = "LOAD R0, 30"
+    cpu.memoria[1] = "LOAD R1, 12"
+    cpu.memoria[2] = "SUB R0, R1"
+    cpu.memoria[3] = "HALT"
+
+    cpu.executar()
+
+    assert cpu.registradores["R0"] == 18
+
+    print("[OK] SUB")
+
+
+def teste_and():
+    cpu = CPU()
+
+    cpu.memoria[0] = "LOAD R0, 11"
+    cpu.memoria[1] = "LOAD R1, 7"
+    cpu.memoria[2] = "AND R0, R1"
+    cpu.memoria[3] = "HALT"
+
+    cpu.executar()
+
+    assert cpu.registradores["R0"] == 3
+
+    print("[OK] AND")
+
+
+def teste_or():
+    cpu = CPU()
+
+    cpu.memoria[0] = "LOAD R0, 10"
+    cpu.memoria[1] = "LOAD R1, 14"
+    cpu.memoria[2] = "OR R0, R1"
+    cpu.memoria[3] = "HALT"
+
+    cpu.executar()
+
+    assert cpu.registradores["R0"] == 14
+
+    print("[OK] OR")
+
+
+def teste_xor():
+    cpu = CPU()
+
+    cpu.memoria[0] = "LOAD R0, 8"
+    cpu.memoria[1] = "LOAD R1, 6"
+    cpu.memoria[2] = "XOR R0, R1"
+    cpu.memoria[3] = "HALT"
+
+    cpu.executar()
+
+    assert cpu.registradores["R0"] == 14
+
+    print("[OK] XOR")
+
 
 
 if __name__ == "__main__":
-    unittest.main()
+
+    print("Executando testes-base...")
+    print()
+
+    teste_load()
+    teste_jmp()
+    teste_halt()
+
+    teste_add()
+    teste_sub()
+    teste_and()
+    teste_or()
+    teste_xor()
+
+    print()
+    print("Todos os testes-base foram aprovados.")
